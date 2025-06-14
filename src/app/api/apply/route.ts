@@ -3,16 +3,44 @@ import nodemailer from 'nodemailer';
 import { Readable } from 'stream';
 
 // 配置邮件发送器
-const transporter = nodemailer.createTransport({
-  host: 'smtp.protonmail.ch', // ProtonMail SMTP服务器
-  port: 587,
-  secure: false, // 使用STARTTLS
-  auth: {
-    user: process.env.EMAIL_USER, // 从环境变量获取ProtonMail账号
-    pass: process.env.EMAIL_PASS, // 从环境变量获取ProtonMail密码
-  },
-  authMethod: 'PLAIN', // ProtonMail支持PLAIN或LOGIN认证方法
-});
+const createTransporter = () => {
+  // 首先检查环境变量
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.error('缺少邮件配置环境变量');
+    throw new Error('邮件服务配置不完整');
+  }
+
+  // 使用端口587并启用TLS
+  return nodemailer.createTransport({
+    host: 'smtp.protonmail.ch', // ProtonMail SMTP服务器
+    port: 587, // 使用587端口进行TLS连接
+    secure: false, // 使用STARTTLS
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+      // 如果有证书问题，可以尝试设置为true
+      rejectUnauthorized: false
+    },
+    debug: true // 启用调试模式以查看详细日志
+  });
+};
+
+// 创建邮件发送器
+let transporter: nodemailer.Transporter;
+try {
+  transporter = createTransporter();
+  console.log('邮件发送器初始化成功');
+} catch (error) {
+  console.error('初始化邮件发送器失败:', error);
+  // 创建一个空的transporter以避免类型错误
+  transporter = nodemailer.createTransport({
+    host: 'localhost',
+    port: 25,
+    secure: false
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
