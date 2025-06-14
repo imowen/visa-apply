@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { Readable } from 'stream';
 
 // 配置邮件发送器
 const transporter = nodemailer.createTransport({
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     const paymentOption = formData.get('paymentOption') as string;
     
     // 收集申请人照片信息
-    const applicantPhotos: { portrait?: File, passport?: File }[] = [];
+    const applicantPhotos: { portrait?: File, passport?: File, portraitBuffer?: Buffer, passportBuffer?: Buffer }[] = [];
     let index = 1;
     
     while (formData.get(`portraitPhoto${index}`) || formData.get(`passportPhoto${index}`)) {
@@ -38,10 +39,23 @@ export async function POST(request: NextRequest) {
       const passportPhoto = formData.get(`passportPhoto${index}`) as File | null;
       
       if (portraitPhoto || passportPhoto) {
-        applicantPhotos.push({
+        const applicant: { portrait?: File, passport?: File, portraitBuffer?: Buffer, passportBuffer?: Buffer } = {
           portrait: portraitPhoto || undefined,
           passport: passportPhoto || undefined
-        });
+        };
+        
+        // 将File对象转换为Buffer
+        if (portraitPhoto) {
+          const arrayBuffer = await portraitPhoto.arrayBuffer();
+          applicant.portraitBuffer = Buffer.from(arrayBuffer);
+        }
+        
+        if (passportPhoto) {
+          const arrayBuffer = await passportPhoto.arrayBuffer();
+          applicant.passportBuffer = Buffer.from(arrayBuffer);
+        }
+        
+        applicantPhotos.push(applicant);
       }
       
       index++;
@@ -77,17 +91,17 @@ export async function POST(request: NextRequest) {
       attachments: applicantPhotos.flatMap((applicant, i) => {
         const attachments = [];
         
-        if (applicant.portrait) {
+        if (applicant.portraitBuffer) {
           attachments.push({
             filename: `applicant${i+1}_portrait.jpg`,
-            content: applicant.portrait
+            content: applicant.portraitBuffer
           });
         }
         
-        if (applicant.passport) {
+        if (applicant.passportBuffer) {
           attachments.push({
             filename: `applicant${i+1}_passport.jpg`,
-            content: applicant.passport
+            content: applicant.passportBuffer
           });
         }
         
