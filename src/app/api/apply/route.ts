@@ -10,21 +10,20 @@ const createTransporter = () => {
     throw new Error('邮件服务配置不完整');
   }
 
-  // 尝试另一种ProtonMail配置
+  // 根据正确的ProtonMail配置
   return nodemailer.createTransport({
-    host: 'mail.protonmail.ch', // 尝试使用另一个服务器地址
-    port: 587,
-    secure: false,
+    host: 'smtp.protonmail.ch', // ProtonMail SMTP服务器
+    port: 587, // 587端口使用STARTTLS
+    secure: false, // 因为使用STARTTLS，所以设置为false
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
-    authMethod: 'LOGIN', // 尝试LOGIN认证方法
+    authMethod: 'PLAIN', // 使用PLAIN认证方式
     tls: {
-      rejectUnauthorized: false,
-      ciphers: 'SSLv3'
+      rejectUnauthorized: false // 如果有证书问题，允许自签名证书
     },
-    debug: true
+    debug: true // 保留调试模式以查看详细日志
   });
 };
 
