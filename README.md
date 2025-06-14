@@ -1,31 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 电子签证申请系统
 
-## Getting Started
+这是一个使用Next.js构建的电子签证申请系统，支持多申请人、照片上传和支付选项。
 
-First, run the development server:
+## 功能特点
+
+- 电子签证申请表单
+- 支持多个申请人
+- 照片上传和预览
+- 支付选项（现在支付/稍后支付）
+- 表单验证
+- 通过电子邮件发送申请信息
+
+## 环境变量设置
+
+在项目根目录创建一个`.env.local`文件，并添加以下环境变量：
+
+```
+EMAIL_USER=your_protonmail_email@protonmail.com
+EMAIL_PASS=your_protonmail_password_or_app_specific_password
+PROTONMAIL_ADDRESS=your_protonmail_email@protonmail.com
+```
+
+### ProtonMail SMTP 设置
+
+本项目使用ProtonMail的SMTP服务发送邮件，相关设置如下：
+
+- SMTP主机: smtp.protonmail.ch
+- 端口: 587
+- 认证方式: PLAIN或LOGIN
+- 加密: STARTTLS
+
+## 开始使用
+
+首先，安装依赖：
+
+```bash
+npm install
+```
+
+然后，运行开发服务器：
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+打开 [http://localhost:3000](http://localhost:3000) 查看应用。
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
