@@ -16,7 +16,9 @@ const transporter = nodemailer.createTransport({
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('开始处理表单提交请求');
     const formData = await request.formData();
+    console.log('成功解析表单数据');
     
     // 获取表单数据
     const startDate = formData.get('startDate') as string;
@@ -83,7 +85,16 @@ export async function POST(request: NextRequest) {
     `;
     
     // 发送邮件
-    await transporter.sendMail({
+    console.log('准备发送邮件...');
+    console.log('邮件配置:', {
+      from: process.env.EMAIL_USER,
+      to: process.env.PROTONMAIL_ADDRESS,
+      subject: mailSubject,
+      attachmentsCount: applicantPhotos.length
+    });
+    
+    try {
+      await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: process.env.PROTONMAIL_ADDRESS, // 您的ProtonMail地址
       subject: mailSubject,
@@ -108,6 +119,11 @@ export async function POST(request: NextRequest) {
         return attachments;
       })
     });
+      console.log('邮件发送成功');
+    } catch (emailError: any) {
+      console.error('邮件发送失败:', emailError);
+      throw new Error(`邮件发送失败: ${emailError?.message || '未知错误'}`);
+    }
     
     return NextResponse.json({ 
       success: true, 
@@ -118,6 +134,18 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('处理申请时出错:', error);
+    // 记录更详细的错误信息
+    if (error instanceof Error) {
+      console.error('错误详情:', error.message);
+      console.error('错误堆栈:', error.stack);
+    }
+    
+    // 检查环境变量
+    console.log('环境变量检查:');
+    console.log('EMAIL_USER 是否存在:', !!process.env.EMAIL_USER);
+    console.log('EMAIL_PASS 是否存在:', !!process.env.EMAIL_PASS);
+    console.log('PROTONMAIL_ADDRESS 是否存在:', !!process.env.PROTONMAIL_ADDRESS);
+    
     return NextResponse.json({ 
       success: false, 
       message: '提交申请时出现错误，请稍后重试。' 
